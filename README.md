@@ -2,7 +2,7 @@
 
 A lightweight macOS menu bar app that shows your **Cursor plan & usage** at a glance — right in the menu bar, no browser needed.
 
-![Menu bar icon showing usage](docs/screenshot-icon.png)
+![Menu bar icon showing usage](docs/screenshot-menu.png)
 
 ---
 
