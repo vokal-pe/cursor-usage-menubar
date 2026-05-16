@@ -570,5 +570,13 @@ class CursorUsageApp(rumps.App):
 
 # ---------------------------------------------------------------------------
 
+def _hide_from_dock() -> None:
+    """Menu bar only — no Python icon in the Dock."""
+    AppKit.NSApplication.sharedApplication().setActivationPolicy_(
+        AppKit.NSApplicationActivationPolicyAccessory
+    )
+
+
 if __name__ == "__main__":
+    _hide_from_dock()
     CursorUsageApp().run()
