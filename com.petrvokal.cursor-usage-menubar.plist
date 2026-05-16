@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.petrvokal.cursor-usage-menubar</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>SCRIPT_DIR/app.py</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>SCRIPT_DIR</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/cursor-usage-menubar.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/cursor-usage-menubar.log</string>
+</dict>
+</plist>

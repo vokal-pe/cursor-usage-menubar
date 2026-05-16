@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.egg-info/
+dist/
+build/
+venv/
+.venv/
+# Config with session token — never commit this
+~/Library/Application\ Support/cursor-usage/
+config.json
