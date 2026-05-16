@@ -53,9 +53,19 @@ Quit
 
 Not a developer? No problem. Open **Cursor** and paste this prompt into the chat:
 
-> Install the cursor-usage-menubar app from https://github.com/vokal-pe/cursor-usage-menubar — clone it, run install.sh, and walk me through signing in.
+> Install the cursor-usage-menubar app from https://github.com/vokal-pe/cursor-usage-menubar — clone it and run install.sh.
+> 
+> Before you start, please explain to me:
+> - what the app does and what it shows in the menu bar
+> - that the source code is fully open on GitHub and I can read every line
+> - that the only network request it makes is to cursor.com/api/usage-summary — the same endpoint my browser uses on cursor.com/dashboard/usage
+> - that my login token is stored only locally on my Mac in ~/Library/Application Support/cursor-usage/config.json and is never sent anywhere except back to cursor.com
+> - that the Sign in via web window is a standard macOS WebKit browser — my password goes directly to Cursor's servers, the app only reads the resulting session cookie
+> - that there is no analytics, no telemetry, and no third-party SDKs
+> 
+> Then run the installation, ask me whether I want the app to start automatically on login, and walk me through signing in.
 
-Cursor will clone the repo, run the installer, and guide you through signing in — no Terminal knowledge required.
+Cursor will explain everything, run the installer, and guide you step by step — no Terminal knowledge required.
 
 ---
 
