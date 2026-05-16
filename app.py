@@ -290,6 +290,7 @@ class CursorUsageApp(rumps.App):
 
         self.token: Optional[str] = None
         self._notified_missing_token = False
+        self._notified_over_limit = False
 
         # Pending UI update z background vlákna → aplikuje main-thread timer
         self._pending: Optional[dict] = None  # {'line1','line2','info','update_time'} nebo {'error','plain'}
@@ -382,6 +383,15 @@ class CursorUsageApp(rumps.App):
             od_line = f"${d['od_used']:.2f}"
             if d["od_limit"] and d["od_limit"] > 0:
                 od_line += f" / ${d['od_limit']:.2f}"
+
+            if d["auto_pct"] < 100 and d["api_pct"] < 100:
+                self._notified_over_limit = False  # reset pro příští cyklus
+
+            if (d["auto_pct"] >= 100 or d["api_pct"] >= 100) and not self._notified_over_limit:
+                self._notified_over_limit = True
+                which = "Auto" if d["auto_pct"] >= 100 else "Named"
+                rumps.notification("Cursor Usage", f"Limit překročen — {which} modely",
+                                   "Zkontroluj svůj plán na cursor.com/dashboard/usage")
 
             self._pending = {
                 "auto_pct":   d["auto_pct"],
