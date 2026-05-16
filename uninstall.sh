@@ -16,8 +16,16 @@ else
     echo "--> LaunchAgent not found (already removed?)."
 fi
 
-# Kill any running instance
-pkill -f "app.py" 2>/dev/null && echo "--> App stopped." || echo "--> App was not running."
+# Kill any running instance (installed copy + legacy repo path)
+INSTALL_DIR="$HOME/Library/Application Support/cursor-usage/menubar"
+stopped=0
+pkill -f "$INSTALL_DIR/app.py" 2>/dev/null && stopped=1
+pkill -f "cursor-usage-menubar/app.py" 2>/dev/null && stopped=1
+if [ "$stopped" -eq 1 ]; then
+    echo "--> App stopped."
+else
+    echo "--> App was not running."
+fi
 
 echo ""
 echo "✅  Done. cursor-usage-menubar has been uninstalled."

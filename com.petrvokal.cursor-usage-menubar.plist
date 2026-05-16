@@ -9,11 +9,11 @@
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>SCRIPT_DIR/app.py</string>
+        <string>INSTALL_DIR/app.py</string>
     </array>
 
     <key>WorkingDirectory</key>
-    <string>SCRIPT_DIR</string>
+    <string>INSTALL_DIR</string>
 
     <key>RunAtLoad</key>
     <true/>

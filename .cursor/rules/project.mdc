@@ -34,7 +34,7 @@ cd "$(dirname "$0")/.." && python3 app.py
 
 ## LaunchAgent note
 
-Plist may fail with `Operation not permitted` when app lives under `~/Documents/` — macOS privacy. Fix: move to `~/Applications/` or grant Full Disk Access to `/usr/bin/python3`.
+`install.sh` copies the app to `~/Library/Application Support/cursor-usage/menubar/` — launchd cannot read `~/Documents/` (TCC). Do not point the plist at the git clone under Documents.
 
 ## Repo
 

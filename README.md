@@ -77,10 +77,11 @@ cd cursor-usage-menubar
 bash install.sh
 ```
 
-`install.sh` does three things:
-1. Installs Python dependencies (`pip install -r requirements.txt`)
-2. Optionally sets up auto-start on login (you will be asked)
-3. Starts the app immediately
+`install.sh` does four things:
+1. Copies the app to `~/Library/Application Support/cursor-usage/menubar/` (macOS blocks LaunchAgent from reading `~/Documents/`)
+2. Installs Python dependencies (`pip install -r requirements.txt`)
+3. Optionally sets up auto-start on login (you will be asked)
+4. Starts the app immediately
 
 ### Sign in
 
