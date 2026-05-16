@@ -163,8 +163,8 @@ def build_status_icon(auto_pct: float, api_pct: float,
     H = AppKit.NSStatusBar.systemStatusBar().thickness()
     cap_h = font.capHeight()
 
-    auto_s  = f"{auto_pct:.0f}%"
-    api_s   = f"{api_pct:.0f}%"
+    auto_s  = f"{auto_pct:.0f}%" if auto_pct >= 1 or auto_pct == 0 else "<1%"
+    api_s   = f"{api_pct:.0f}%"  if api_pct  >= 1 or api_pct  == 0 else "<1%"
 
     aw = _text_w(auto_s,  attrs)
     bw = _text_w(api_s,   attrs)
