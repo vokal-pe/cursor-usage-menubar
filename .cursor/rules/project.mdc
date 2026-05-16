@@ -1,0 +1,55 @@
+---
+description: Cursor Usage Menu Bar — architektura, konvence a bezpečnost
+alwaysApply: true
+---
+
+# Cursor Usage Menu Bar
+
+macOS menu bar app (Python 3.9+, `rumps`, PyObjC `AppKit`) zobrazující plan & usage z `https://cursor.com/api/usage-summary`.
+
+## Soubory
+
+| Soubor | Účel |
+|--------|------|
+| `app.py` | Hlavní logika, ikona (NSImage), menu, fetch, timery |
+| `login_window.py` | WKWebView přihlášení na cursor.com → extrakce `WorkosCursorSessionToken` |
+| `install.sh` / `uninstall.sh` | Instalace pip deps + volitelný LaunchAgent |
+| `start.sh` | Ruční start |
+| `requirements.txt` | `rumps`, `pyobjc-framework-*`, `cryptography` |
+
+Legacy (ignorováno v git): `get_token.py`, `get_token_cdp.py`.
+
+## UI a vlákna
+
+- Fetch běží v `threading` — **nikdy** neměnit UI z background vlákna.
+- Aktualizace ikony/menu přes `rumps.Timer` → `_apply_pending` na main thread.
+- Ikona: `build_status_icon()` kreslí `NSImage` (ne `setView_`).
+- Dock skrytý: `NSApplicationActivationPolicyAccessory` v `__main__`.
+- Menu: samostatné `rumps.MenuItem` (ne jeden dlouhý text).
+
+## Token a síť
+
+- Token: `~/Library/Application Support/cursor-usage/config.json` — **nikdy necommitovat**.
+- Jediný endpoint: `GET cursor.com/api/usage-summary` s cookie `WorkosCursorSessionToken`.
+- Auto-token: čtení z Cursor app cookie DB (`try_read_token_from_cursor_cookies`).
+- Žádná telemetrie, žádné třetí strany.
+
+## Konvence změn
+
+- Zachovat Python 3.9 kompatibilitu (`Optional[str]`, ne `str | None`).
+- `@objc.python_method` na pomocných metodách, které by PyObjC exportovalo špatně.
+- Ikona: `<1%` pro hodnoty 0–1 %; notifikace při 401/403 a při ≥100 % usage.
+- `REFRESH_INTERVAL` konfigurovatelný v menu, ukládat do config.json.
+
+## Spuštění
+
+```bash
+cd "$(dirname "$0")" && python3 app.py
+# nebo: bash start.sh
+```
+
+LaunchAgent v `~/Library/LaunchAgents/` může padat na `Documents/` kvůli macOS TCC — pro auto-start zvážit přesun mimo Documents nebo Full Disk Access.
+
+## GitHub
+
+Repo: `vokal-pe/cursor-usage-menubar` — veřejný, MIT.
