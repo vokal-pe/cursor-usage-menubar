@@ -49,15 +49,27 @@ Quit
 
 ## Install
 
+### 🤖 Install via Cursor AI (no Terminal needed)
+
+Not a developer? No problem. Open **Cursor** and paste this prompt into the chat:
+
+> Install the cursor-usage-menubar app from https://github.com/vokal-pe/cursor-usage-menubar — clone it, run install.sh, and walk me through signing in.
+
+Cursor will clone the repo, run the installer, and guide you through signing in — no Terminal knowledge required.
+
+---
+
+### Manual install (Terminal)
+
 ```bash
-git clone https://github.com/petrvokal/cursor-usage-menubar.git
+git clone https://github.com/vokal-pe/cursor-usage-menubar.git
 cd cursor-usage-menubar
 bash install.sh
 ```
 
 `install.sh` does three things:
 1. Installs Python dependencies (`pip install -r requirements.txt`)
-2. Copies the LaunchAgent plist to `~/Library/LaunchAgents/` (auto-start on login)
+2. Optionally sets up auto-start on login (you will be asked)
 3. Starts the app immediately
 
 ### Sign in
