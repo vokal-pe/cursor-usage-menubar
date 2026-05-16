@@ -1,43 +1,30 @@
-# Cursor Usage Menu Bar — průvodce pro agenta
+# Agent guide — cursor-usage-menubar
 
-## Co to je
+## What this is
 
-Lehká macOS aplikace v řádku nabídek: dvě procenta (Auto / Named modely), dny do obnovy a on-demand USD. Po kliknutí kompaktní menu s detaily.
+macOS menu bar utility for **personal** Cursor.com usage (Auto %, Named %, on-demand $, days until renewal). Open source, MIT.
 
-## Rychlý start
+## Before changing code
 
-```bash
-pip3 install -r requirements.txt
-python3 app.py
-```
+1. Read `.cursor/rules/project.mdc`.
+2. Do not add outbound URLs except `cursor.com`.
+3. Never log or commit session tokens.
+4. Test UI changes on macOS main thread (`rumps.Timer` for updates from background fetch).
 
-Instalace včetně LaunchAgent: `bash install.sh`
+## Common tasks
 
-## Kde co měnit
-
-- **Ikona v menu baru** → `build_status_icon`, `_apply_icon` v `app.py`
-- **Obsah dropdown menu** → `_do_fetch` / `_apply_pending`, položky `item_*`
-- **Přihlášení** → `login_window.py`, menu „Přihlásit se přes web…“
-- **Interval obnovy** → `REFRESH_INTERVALS`, `load_refresh_interval` / `save_refresh_interval`
-- **Dokumentace pro uživatele** → `README.md`
-
-## Testování
-
-1. Spustit `python3 app.py` — ikona v menu baru, bez ikony v Docku.
-2. Menu → Obnovit — data se načtou (vyžaduje platný token).
-3. Bez tokenu: ikona `⌨ ?`, přihlášení přes web nebo ruční token.
-
-## Časté úkoly
-
-| Úkol | Postup |
+| Task | Where |
 |------|--------|
-| Nová položka v menu | Přidat `rumps.MenuItem` v `__init__`, aktualizovat v `_apply_pending` |
-| Změna API polí | `parse_data()` — mapování z JSON `usage-summary` |
-| Oprava auto-start | Zkontrolovat plist v `~/Library/LaunchAgents/`, log `/tmp/cursor-usage-menubar.log` |
-| Release na GitHub | Commit na `main`, push `origin main` |
+| Change icon layout | `build_status_icon()`, `_apply_icon()` in `app.py` |
+| Change dropdown menu | `CursorUsageApp.__init__`, `_do_fetch` pending keys |
+| Refresh interval | `REFRESH_INTERVALS`, `load_refresh_interval()` |
+| Login flow | `login_window.py`, menu item „Přihlásit se přes web…“ |
+| Install / autostart | `install.sh`, `com.petrvokal.cursor-usage-menubar.plist` |
 
-## Omezení
+## Release checklist
 
-- Pouze macOS 12+.
-- Vyžaduje běžící proces (menu bar app = daemon).
-- Nepřidávat síťové volání mimo `cursor.com`.
+- [ ] `python3 -c "import ast; ast.parse(open('app.py').read())"`
+- [ ] Manual run: icon + menu + login
+- [ ] No secrets in `git diff`
+- [ ] Update README if user-facing behavior changes
+- [ ] Push to `main` on GitHub

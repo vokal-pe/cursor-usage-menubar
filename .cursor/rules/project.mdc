@@ -1,55 +1,41 @@
 ---
-description: Cursor Usage Menu Bar — architektura, konvence a bezpečnost
+description: Cursor Usage Menu Bar — macOS app context and conventions
 alwaysApply: true
 ---
 
-# Cursor Usage Menu Bar
+# cursor-usage-menubar
 
-macOS menu bar app (Python 3.9+, `rumps`, PyObjC `AppKit`) zobrazující plan & usage z `https://cursor.com/api/usage-summary`.
+Lightweight macOS menu bar app (Python 3.9+, `rumps`, PyObjC `AppKit`) showing Cursor plan & usage from `https://cursor.com/api/usage-summary`.
 
-## Soubory
+## Key files
 
-| Soubor | Účel |
-|--------|------|
-| `app.py` | Hlavní logika, ikona (NSImage), menu, fetch, timery |
-| `login_window.py` | WKWebView přihlášení na cursor.com → extrakce `WorkosCursorSessionToken` |
-| `install.sh` / `uninstall.sh` | Instalace pip deps + volitelný LaunchAgent |
-| `start.sh` | Ruční start |
+| File | Role |
+|------|------|
+| `app.py` | Main app: icon (NSImage), fetch, menu, notifications |
+| `login_window.py` | WKWebView sign-in on cursor.com/settings |
+| `install.sh` / `uninstall.sh` | Install deps + optional LaunchAgent |
 | `requirements.txt` | `rumps`, `pyobjc-framework-*`, `cryptography` |
 
-Legacy (ignorováno v git): `get_token.py`, `get_token_cdp.py`.
+## Rules
 
-## UI a vlákna
+- **Network**: only `cursor.com` (usage API + login page + dashboard link). No telemetry.
+- **Token**: `~/Library/Application Support/cursor-usage/config.json` — never commit; `.gitignore` covers it.
+- **UI thread**: background fetch → `_pending` dict → `rumps.Timer` applies icon/menu on main thread.
+- **Menu bar only**: `NSApplicationActivationPolicyAccessory` — no Dock icon.
+- **Icon**: two stacked % + days/USD via `build_status_icon()`; show `<1%` when 0 < pct < 1.
+- **Legacy**: `get_token.py`, `get_token_cdp.py` are deprecated (use `login_window.py`); listed in `.gitignore`.
 
-- Fetch běží v `threading` — **nikdy** neměnit UI z background vlákna.
-- Aktualizace ikony/menu přes `rumps.Timer` → `_apply_pending` na main thread.
-- Ikona: `build_status_icon()` kreslí `NSImage` (ne `setView_`).
-- Dock skrytý: `NSApplicationActivationPolicyAccessory` v `__main__`.
-- Menu: samostatné `rumps.MenuItem` (ne jeden dlouhý text).
-
-## Token a síť
-
-- Token: `~/Library/Application Support/cursor-usage/config.json` — **nikdy necommitovat**.
-- Jediný endpoint: `GET cursor.com/api/usage-summary` s cookie `WorkosCursorSessionToken`.
-- Auto-token: čtení z Cursor app cookie DB (`try_read_token_from_cursor_cookies`).
-- Žádná telemetrie, žádné třetí strany.
-
-## Konvence změn
-
-- Zachovat Python 3.9 kompatibilitu (`Optional[str]`, ne `str | None`).
-- `@objc.python_method` na pomocných metodách, které by PyObjC exportovalo špatně.
-- Ikona: `<1%` pro hodnoty 0–1 %; notifikace při 401/403 a při ≥100 % usage.
-- `REFRESH_INTERVAL` konfigurovatelný v menu, ukládat do config.json.
-
-## Spuštění
+## Run / test
 
 ```bash
-cd "$(dirname "$0")" && python3 app.py
-# nebo: bash start.sh
+cd "$(dirname "$0")/.." && python3 app.py
+# or: bash start.sh
 ```
 
-LaunchAgent v `~/Library/LaunchAgents/` může padat na `Documents/` kvůli macOS TCC — pro auto-start zvážit přesun mimo Documents nebo Full Disk Access.
+## LaunchAgent note
 
-## GitHub
+Plist may fail with `Operation not permitted` when app lives under `~/Documents/` — macOS privacy. Fix: move to `~/Applications/` or grant Full Disk Access to `/usr/bin/python3`.
 
-Repo: `vokal-pe/cursor-usage-menubar` — veřejný, MIT.
+## Repo
+
+https://github.com/vokal-pe/cursor-usage-menubar
