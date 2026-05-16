@@ -10,3 +10,7 @@ venv/
 # Config with session token — never commit this
 ~/Library/Application\ Support/cursor-usage/
 config.json
+
+# Legacy token helpers (replaced by login_window.py)
+get_token.py
+get_token_cdp.py
