@@ -31,7 +31,14 @@ CONFIG_PATH = os.path.expanduser(
 CURSOR_COOKIES_DB = os.path.expanduser(
     "~/Library/Application Support/Cursor/Partitions/cursor-browser/Cookies"
 )
-REFRESH_INTERVAL = 300
+REFRESH_INTERVAL_DEFAULT = 300
+REFRESH_INTERVALS = [
+    (60,   "1 minuta"),
+    (300,  "5 minut"),
+    (900,  "15 minut"),
+    (1800, "30 minut"),
+    (3600, "60 minut"),
+]
 BASE_URL = "https://cursor.com"
 
 
@@ -39,25 +46,40 @@ BASE_URL = "https://cursor.com"
 # Token helpers
 # ---------------------------------------------------------------------------
 
-def load_token() -> Optional[str]:
+def _load_config() -> dict:
     try:
         with open(CONFIG_PATH) as f:
-            return json.load(f).get("session_token") or None
+            return json.load(f)
     except Exception:
-        return None
+        return {}
+
+
+def _save_config(data: dict) -> None:
+    os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+    with open(CONFIG_PATH, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+def load_token() -> Optional[str]:
+    return _load_config().get("session_token") or None
 
 
 def save_token(token: str) -> None:
-    os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-    data = {}
-    try:
-        with open(CONFIG_PATH) as f:
-            data = json.load(f)
-    except Exception:
-        pass
+    data = _load_config()
     data["session_token"] = token
-    with open(CONFIG_PATH, "w") as f:
-        json.dump(data, f, indent=2)
+    _save_config(data)
+
+
+def load_refresh_interval() -> int:
+    val = _load_config().get("refresh_interval", REFRESH_INTERVAL_DEFAULT)
+    valid = [s for s, _ in REFRESH_INTERVALS]
+    return val if val in valid else REFRESH_INTERVAL_DEFAULT
+
+
+def save_refresh_interval(seconds: int) -> None:
+    data = _load_config()
+    data["refresh_interval"] = seconds
+    _save_config(data)
 
 
 def _decrypt_mac_cookie(encrypted_value: bytes) -> str:
@@ -313,6 +335,19 @@ class CursorUsageApp(rumps.App):
         self.set_token_item      = rumps.MenuItem("Zadat token ručně…", callback=self.prompt_token)
         self.open_dashboard_item = rumps.MenuItem("Otevřít dashboard", callback=self._open_dashboard)
 
+        # Submenu pro interval obnovy
+        self._interval_items = {}
+        current_interval = load_refresh_interval()
+        interval_menu = rumps.MenuItem("Obnovovat každých…")
+        for secs, label in REFRESH_INTERVALS:
+            item = rumps.MenuItem(
+                ("✓ " if secs == current_interval else "   ") + label,
+                callback=self._set_interval,
+            )
+            item._interval_secs = secs
+            self._interval_items[secs] = item
+            interval_menu.add(item)
+
         self.menu = [
             self.item_days,
             self.item_plan,
@@ -326,12 +361,14 @@ class CursorUsageApp(rumps.App):
             None,
             self.refresh_item,
             self.open_dashboard_item,
+            interval_menu,
             None,
             self.login_item,
             self.set_token_item,
         ]
 
         self._status_button = None  # NSStatusBarButton
+        self._refresh_interval = load_refresh_interval()
 
         self.token = load_token()
         if not self.token:
@@ -345,8 +382,7 @@ class CursorUsageApp(rumps.App):
     # Timers
 
     def _start_timers(self):
-        # Fetch timer — každých REFRESH_INTERVAL sekund (spouští background thread)
-        self._fetch_timer = rumps.Timer(self._on_fetch_timer, REFRESH_INTERVAL)
+        self._fetch_timer = rumps.Timer(self._on_fetch_timer, self._refresh_interval)
         self._fetch_timer.start()
 
         # UI timer — každou sekundu aplikuje pending update na main thread
@@ -463,6 +499,20 @@ class CursorUsageApp(rumps.App):
             self.item_ondemand.title = self.item_total.title = ""
 
     # ------------------------------------------------------------------
+
+    def _set_interval(self, sender):
+        secs = sender._interval_secs
+        self._refresh_interval = secs
+        save_refresh_interval(secs)
+        # Aktualizuj zaškrtnutí v submenu
+        for s, item in self._interval_items.items():
+            label = dict(REFRESH_INTERVALS)[s]
+            item.title = ("✓ " if s == secs else "   ") + label
+        # Restartuj fetch timer s novým intervalem
+        self._fetch_timer.stop()
+        self._fetch_timer = rumps.Timer(self._on_fetch_timer, secs)
+        self._fetch_timer.start()
+        threading.Thread(target=self._do_fetch, daemon=True).start()
 
     def manual_refresh(self, _):
         threading.Thread(target=self._do_fetch, daemon=True).start()
