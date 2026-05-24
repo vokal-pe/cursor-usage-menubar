@@ -266,8 +266,9 @@ def parse_data(data: dict) -> dict:
     auto_pct = plan.get("autoPercentUsed", 0)
     api_pct = plan.get("apiPercentUsed", 0)
     total_pct = plan.get("totalPercentUsed", 0)
-    od_used = on_demand.get("used", 0) or 0
-    od_limit = on_demand.get("limit")
+    od_used = (on_demand.get("used", 0) or 0) / 100.0
+    od_limit_raw = on_demand.get("limit")
+    od_limit = (od_limit_raw / 100.0) if od_limit_raw is not None else None
 
     end_str = data.get("billingCycleEnd", "")
     days = days_remaining(end_str)
